@@ -1,0 +1,8 @@
+#!/bin/bash
+train_file=TU_list.txt
+
+path=/storage/homefs/zw21s077/zhihui/GATK_TU
+
+find ${path} -name '*.vcf.gz' > ${train_file}
+
+sed -i 's/^/-V &/g' ${train_file}
