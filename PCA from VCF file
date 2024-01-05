@@ -1,0 +1,40 @@
+## bash part 
+# Filter out non-numeric chromosomes from the VCF file
+awk '$1 ~ /^[0-9]+$/ || /^#/' new_name.vcf > filtered.vcf
+
+# Run PLINK with the filtered VCF file
+plink --maf 0.05 --vcf filtered.vcf --pca header tabs --out SNP_test
+
+## R part
+# Install and load necessary packages
+library(ggplot2)
+library(ggbiplot)
+# Note: ggbiplot package needs to be downloaded from GitHub
+# install.packages("devtools")
+# library(devtools)
+# install_github("vqv/ggbiplot")
+
+# Read PCA data file
+df1 = read.table("SNP_test.eigenvec", header = TRUE, row.names = 1)
+df1 <- df1[, -1]
+
+# Read sample grouping data file
+dfGroup1 = read.table("sample.txt", header = TRUE, row.names = 1)
+
+# Perform PCA computation
+pca_result1 <- prcomp(df1,
+                     scale = TRUE  # Logical value indicating whether variables should be scaled to have unit variance before analysis
+)
+
+# Plot Biplot
+ggbiplot(pca_result1, 
+         var.axes = FALSE,            # Whether to plot arrows for variables
+         obs.scale = 1,               # Aspect ratio 
+         groups = dfGroup1[, 1],      # Add grouping information, taken from the first column of the grouping file
+         ellipse = FALSE,             # Whether to draw ellipses around groups
+         circle = FALSE) + 
+  geom_text(                        # Function to add annotations in the plot
+    aes(label = rownames(df1)),     # Specify the labels to be the row names of the data frame df
+    vjust = 1.5,                    # Specify the position of labels, vjust=1.5 moves labels vertically downward by 1.5 units
+    size = 2                        # Label size
+  )
